@@ -1,8 +1,22 @@
 <%@ Page Language="C#" AutoEventWireup="true" ResponseEncoding="UTF-8" %>
 <%@ Import Namespace="System" %>
 <%@ Import Namespace="System.IO" %>
+<%@ Import Namespace="System.Data.SqlClient" %>
+<%@ Import Namespace="System.Configuration" %>
 
 <script runat="server">
+    // DBHelper 靜態類別
+    public static class DBHelper
+    {
+        public static string ConnectionString
+        {
+            get
+            {
+                return ConfigurationManager.ConnectionStrings["H2C_Portal_DB"].ConnectionString;
+            }
+        }
+    }
+
     protected void Page_Load(object sender, EventArgs e)
     {
         if (Session["Role"] == null)
@@ -11,38 +25,69 @@
         }
     }
 
+    private int GetEmployeeIdByUserId(int userId)
+    {
+        string sql = "SELECT EmployeeID FROM Employees WHERE UserID = @userId";
+        using (SqlConnection conn = new SqlConnection(DBHelper.ConnectionString))
+        {
+            SqlCommand cmd = new SqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@userId", userId);
+            conn.Open();
+            object result = cmd.ExecuteScalar();
+            if (result != null)
+            {
+                return Convert.ToInt32(result);
+            }
+        }
+        return 0;
+    }
+
     // 🚨 這是任意檔案上傳的漏洞點 🚨
     protected void btnUpload_Click(object sender, EventArgs e)
     {
         if (fileUploader.HasFile)
         {
-            string fileName = fileUploader.FileName;
+            string originalFileName = fileUploader.FileName;
+            string extension = Path.GetExtension(originalFileName).ToLower();
             string savePath = Server.MapPath("~/uploads/");
 
-            // 檢查目錄是否存在 (如果不存在，請手動創建 uploads 資料夾)
+            // 檢查目錄是否存在
             if (!Directory.Exists(savePath))
             {
                 Directory.CreateDirectory(savePath);
             }
 
-            // ❌ 僅禁止上傳 .aspx 檔案，其餘檔案類型皆允許
-            // 攻擊者仍可上傳其他可執行檔案（如 .php, .jsp, .asp 等）
-            string extension = Path.GetExtension(fileName).ToLower();
-
-            if (extension == ".aspx")
+            // 只允許上傳 jpg, jpeg, png 圖片
+            if (extension != ".jpg" && extension != ".jpeg" && extension != ".png")
             {
-                lblUploadMessage.Text = "上傳失敗：禁止上傳 .aspx 檔案！";
+                lblUploadMessage.Text = "上傳失敗：只允許上傳 .jpg, .jpeg, .png 格式的圖片！";
                 lblUploadMessage.CssClass = "alert alert-danger";
                 return;
             }
 
-            // 將檔案存入目標目錄
-            string fullPath = Path.Combine(savePath, fileName);
+            // 取得當前登入用戶的員工編號
+            int userId = Convert.ToInt32(Session["UserID"]);
+            int employeeId = GetEmployeeIdByUserId(userId);
+
+            if (employeeId <= 0)
+            {
+                lblUploadMessage.Text = "上傳失敗：找不到您的員工資料。";
+                lblUploadMessage.CssClass = "alert alert-danger";
+                return;
+            }
+
+            // 將檔名改為員工編號，保留副檔名
+            string newFileName = employeeId.ToString() + extension;
+            string fullPath = Path.Combine(savePath, newFileName);
 
             try
             {
                 fileUploader.SaveAs(fullPath);
-                lblUploadMessage.Text = "檔案上傳成功！路徑: uploads/" + fileName;
+                
+                // 更新資料庫中的照片路徑
+                UpdateEmployeePhotoPath(employeeId, "uploads/" + newFileName);
+                
+                lblUploadMessage.Text = "檔案上傳成功！檔名: " + newFileName;
                 lblUploadMessage.CssClass = "alert alert-success";
             }
             catch (Exception ex)
@@ -55,6 +100,19 @@
         {
             lblUploadMessage.Text = "請選擇一個檔案。";
             lblUploadMessage.CssClass = "alert alert-warning";
+        }
+    }
+
+    private void UpdateEmployeePhotoPath(int employeeId, string photoPath)
+    {
+        string sql = "UPDATE Employees SET PhotoPath = @PhotoPath WHERE EmployeeID = @EmployeeID";
+        using (SqlConnection conn = new SqlConnection(DBHelper.ConnectionString))
+        {
+            SqlCommand cmd = new SqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@PhotoPath", photoPath);
+            cmd.Parameters.AddWithValue("@EmployeeID", employeeId);
+            conn.Open();
+            cmd.ExecuteNonQuery();
         }
     }
 
@@ -191,10 +249,10 @@
                             
                             <div class="upload-area mb-4">
                                 <i class="bi bi-cloud-upload" style="font-size: 4rem; color: #667eea;"></i>
-                                <h5 class="mt-3 mb-3">選擇檔案上傳</h5>
-                                <asp:FileUpload ID="fileUploader" runat="server" CssClass="form-control" />
+                                <h5 class="mt-3 mb-3">選擇照片上傳</h5>
+                                <asp:FileUpload ID="fileUploader" runat="server" CssClass="form-control" accept="image/jpeg,image/png,.jpg,.jpeg,.png" />
                                 <p class="text-muted mt-3 small">
-                                    <i class="bi bi-info-circle"></i> 禁止上傳: .aspx 檔案，其餘格式皆可上傳
+                                    <i class="bi bi-info-circle"></i> 只允許上傳 .jpg, .jpeg, .png 格式的圖片，檔名會自動改為您的員工編號
                                 </p>
                             </div>
                             

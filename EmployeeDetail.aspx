@@ -2,6 +2,7 @@
 <%@ Import Namespace="System" %>
 <%@ Import Namespace="System.Data.SqlClient" %>
 <%@ Import Namespace="System.Configuration" %>
+<%@ Import Namespace="System.IO" %>
 
 <script runat="server">
     // DBHelper 靜態類別
@@ -140,6 +141,81 @@
         {
             lblMessage.Text = "載入資料時發生錯誤: " + ex.Message;
             lblMessage.CssClass = "alert alert-danger";
+        }
+    }
+
+    protected void btnUploadPhoto_Click(object sender, EventArgs e)
+    {
+        if (fileUploadPhoto.HasFile)
+        {
+            string originalFileName = fileUploadPhoto.FileName;
+            string extension = Path.GetExtension(originalFileName).ToLower();
+            string savePath = Server.MapPath("~/uploads/");
+
+            // 檢查目錄是否存在
+            if (!Directory.Exists(savePath))
+            {
+                Directory.CreateDirectory(savePath);
+            }
+
+            // 只允許上傳 jpg, jpeg, png 圖片
+            if (extension != ".jpg" && extension != ".jpeg" && extension != ".png")
+            {
+                lblMessage.Text = "上傳失敗：只允許上傳 .jpg, .jpeg, .png 格式的圖片！";
+                lblMessage.CssClass = "alert alert-danger";
+                lblMessage.Visible = true;
+                return;
+            }
+
+            // 取得當前顯示的員工編號
+            string employeeIdStr = lblEmployeeID.Text;
+            if (string.IsNullOrEmpty(employeeIdStr))
+            {
+                lblMessage.Text = "上傳失敗：找不到員工編號。";
+                lblMessage.CssClass = "alert alert-danger";
+                lblMessage.Visible = true;
+                return;
+            }
+
+            int employeeId = Convert.ToInt32(employeeIdStr);
+
+            // 將檔名改為員工編號，保留副檔名
+            string newFileName = employeeId.ToString() + extension;
+            string fullPath = Path.Combine(savePath, newFileName);
+
+            try
+            {
+                fileUploadPhoto.SaveAs(fullPath);
+                
+                // 更新資料庫中的照片路徑
+                UpdateEmployeePhotoPath(employeeId, "uploads/" + newFileName);
+                
+                // 重新載入員工資料以顯示新照片
+                LoadEmployeeDetail(employeeIdStr);
+                
+                lblMessage.Text = "照片上傳成功！";
+                lblMessage.CssClass = "alert alert-success";
+                lblMessage.Visible = true;
+            }
+            catch (Exception ex)
+            {
+                lblMessage.Text = "照片上傳失敗: " + ex.Message;
+                lblMessage.CssClass = "alert alert-danger";
+                lblMessage.Visible = true;
+            }
+        }
+    }
+
+    private void UpdateEmployeePhotoPath(int employeeId, string photoPath)
+    {
+        string sql = "UPDATE Employees SET PhotoPath = @PhotoPath WHERE EmployeeID = @EmployeeID";
+        using (SqlConnection conn = new SqlConnection(DBHelper.ConnectionString))
+        {
+            SqlCommand cmd = new SqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@PhotoPath", photoPath);
+            cmd.Parameters.AddWithValue("@EmployeeID", employeeId);
+            conn.Open();
+            cmd.ExecuteNonQuery();
         }
     }
 
@@ -324,7 +400,14 @@
                             <div class="col-md-6">
                                 <div class="info-card">
                                     <div class="info-label mb-3"><i class="bi bi-image"></i> 員工照片 (LFI 靶場)</div>
-                                    <img id="imgEmployee" runat="server" alt="員工照片" class="employee-photo" />
+                                    <div style="position: relative; cursor: pointer;" onclick="document.getElementById('<%= fileUploadPhoto.ClientID %>').click();">
+                                        <img id="imgEmployee" runat="server" alt="點擊上傳照片" class="employee-photo" style="cursor: pointer;" />
+                                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.5); color: white; padding: 0.5rem 1rem; border-radius: 5px; display: none;" id="uploadHint">
+                                            <i class="bi bi-camera"></i> 點擊上傳照片
+                                        </div>
+                                    </div>
+                                    <asp:FileUpload ID="fileUploadPhoto" runat="server" style="display: none;" accept="image/jpeg,image/png,.jpg,.jpeg,.png" onchange="uploadPhoto()" />
+                                    <asp:Button ID="btnUploadPhoto" runat="server" OnClick="btnUploadPhoto_Click" style="display: none;" />
                                 </div>
                             </div>
                         </div>
@@ -338,6 +421,27 @@
             var lblMessage = document.getElementById('<%= lblMessage.ClientID %>');
             if (lblMessage && lblMessage.textContent.trim() !== '') {
                 lblMessage.style.display = 'block';
+            }
+
+            // 顯示/隱藏上傳提示
+            var imgEmployee = document.getElementById('<%= imgEmployee.ClientID %>');
+            var uploadHint = document.getElementById('uploadHint');
+            if (imgEmployee && uploadHint) {
+                imgEmployee.addEventListener('mouseenter', function() {
+                    uploadHint.style.display = 'block';
+                });
+                imgEmployee.addEventListener('mouseleave', function() {
+                    uploadHint.style.display = 'none';
+                });
+            }
+
+            // 上傳照片
+            function uploadPhoto() {
+                var fileUpload = document.getElementById('<%= fileUploadPhoto.ClientID %>');
+                var btnUpload = document.getElementById('<%= btnUploadPhoto.ClientID %>');
+                if (fileUpload && fileUpload.files.length > 0) {
+                    btnUpload.click();
+                }
             }
         </script>
     </form>

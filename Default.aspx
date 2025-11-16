@@ -53,7 +53,7 @@
         }
     }
 
-    // 🚨 這是 SQL Injection 的漏洞點 🚨
+    // ✅ 已修補 SQL Injection 漏洞，使用參數化查詢
     protected void btnLogin_Click(object sender, EventArgs e)
     {
         string username = txtUsername.Text;
@@ -65,9 +65,10 @@
             {
                 conn.Open();
                 
-                // 先檢查帳號是否存在
-                string checkUserSql = "SELECT UserID, Role FROM Users WHERE Username = '" + username + "'";
+                // 先檢查帳號是否存在（使用參數化查詢）
+                string checkUserSql = "SELECT UserID, Role FROM Users WHERE Username = @Username";
                 SqlCommand checkCmd = new SqlCommand(checkUserSql, conn);
+                checkCmd.Parameters.AddWithValue("@Username", username);
                 SqlDataReader userReader = checkCmd.ExecuteReader();
                 
                 if (!userReader.Read())
@@ -84,10 +85,12 @@
                 string role = userReader["Role"].ToString();
                 userReader.Close();
                 
-                // 檢查密碼
-                // ❌ 故意使用字串拼接來建構 SQL 查詢 (SQLi 漏洞)
-                string sql = "SELECT UserID, Role FROM Users WHERE Username = '" + username + "' AND PasswordHash = '" + password + "'";
+                // 檢查密碼（使用參數化查詢）
+                // ✅ 使用參數化查詢防止 SQL Injection
+                string sql = "SELECT UserID, Role FROM Users WHERE Username = @Username AND PasswordHash = @Password";
                 SqlCommand cmd = new SqlCommand(sql, conn);
+                cmd.Parameters.AddWithValue("@Username", username);
+                cmd.Parameters.AddWithValue("@Password", password);
 
                 using (SqlDataReader reader = cmd.ExecuteReader())
                 {
