@@ -27,27 +27,27 @@ GO
 -- 4. 建立 Employees 表 (EmployeeID: 2001, 2002, ...)
 CREATE TABLE Employees (
     EmployeeID INT IDENTITY(2001, 1) PRIMARY KEY,
-    UserID INT UNIQUE FOREIGN KEY REFERENCES Users(UserID),
+    UserID INT UNIQUE NOT NULL, -- 邏輯關聯欄位 (UserID)
     Name NVARCHAR(50) NOT NULL,
     Title NVARCHAR(50) NOT NULL,
     PhotoPath NVARCHAR(255) NULL
 );
 GO
 
--- 5. 建立 News 表 (NewsID: 3001, 3002, ...)
+-- 5. 建立 News 表 (AuthorID 關聯 UserID)
 CREATE TABLE News (
     NewsID INT IDENTITY(3001, 1) PRIMARY KEY,
     Title NVARCHAR(100) NOT NULL,
     Content NVARCHAR(MAX) NOT NULL, 
-    AuthorID INT FOREIGN KEY REFERENCES Users(UserID),
+    AuthorID INT NOT NULL, -- 邏輯關聯欄位 (UserID)
     PostDate DATETIME DEFAULT GETDATE()
 );
 GO
 
--- 6. 建立 Salaries 表 (SalaryID: 4001, 4002, ...)
+-- 6. 建立 Salaries 表 (EmployeeID 關聯 EmployeeID)
 CREATE TABLE Salaries (
     SalaryID INT IDENTITY(4001, 1) PRIMARY KEY,
-    EmployeeID INT UNIQUE FOREIGN KEY REFERENCES Employees(EmployeeID),
+    EmployeeID INT UNIQUE NOT NULL, -- 邏輯關聯欄位 (EmployeeID/UserID)
     MonthlySalary DECIMAL(10, 2) NOT NULL,
     Bonus DECIMAL(10, 2) NOT NULL,
     LastUpdated DATE DEFAULT GETDATE()
@@ -64,23 +64,25 @@ INSERT INTO Users (Username, PasswordHash, Role) VALUES
 (N'dev.zhao', N'H2C2025', N'User'),      -- 1006
 (N'testacc', N'H2C2025', N'User');       -- 1007
 
--- 8. 插入員工資料 (EmployeeIDs: 2001 ~ 2006)
-INSERT INTO Employees (UserID, Name, Title, PhotoPath) VALUES
-(1001, N'林大維', N'系統架構師', N'uploads/2001.jpg'), -- EmployeeID 2001
-(1002, N'王明華', N'業務經理', N'uploads/2002.png'), -- EmployeeID 2002
-(1003, N'李思遠', N'資深工程師', N'uploads/2003.jpg'), -- EmployeeID 2003
-(1004, N'陳芳儀', N'人資專員', N'uploads/2004.png'), -- EmployeeID 2004
-(1005, N'林雅惠', N'會計主管', N'uploads/2005.jpg'), -- EmployeeID 2005 (財務主管)
-(1006, N'趙小開', N'初級開發', N'uploads/2006.jpg'); -- EmployeeID 2006
+-- 8. 插入員工資料 (手動確保 UserID 欄位與 EmployeeID 欄位一致)
+SET IDENTITY_INSERT Employees ON; 
+INSERT INTO Employees (EmployeeID, UserID, Name, Title, PhotoPath) VALUES
+(1001, 1001, N'林大維', N'系統架構師', N'uploads/david_lin.jpg'),
+(1002, 1002, N'王明華', N'業務經理', N'uploads/minghua_wang.png'),
+(1003, 1003, N'李思遠', N'資深工程師', N'uploads/siyuan_li.jpg'),
+(1004, 1004, N'陳芳儀', N'人資專員', N'uploads/fangyi_chen.png'),
+(1005, 1005, N'林雅惠', N'會計主管', N'uploads/yahui_lin.jpg'),
+(1006, 1006, N'趙小開', N'初級開發', N'uploads/xiaokai_zhao.jpg');
+SET IDENTITY_INSERT Employees OFF;
 
--- 9. 插入薪資資料 (用於 SQLi Union 查詢和 IDOR 敏感目標)
+-- 9. 插入薪資資料 (EmployeeID: 1001 ~ 1006)
 INSERT INTO Salaries (EmployeeID, MonthlySalary, Bonus, LastUpdated) VALUES
-(2001, 180000.00, 300000.00, GETDATE()), -- 系統架構師 (最高薪資)
-(2002, 75000.00, 150000.00, GETDATE()), -- 業務經理
-(2003, 85000.00, 180000.00, GETDATE()), -- 資深工程師
-(2004, 45000.00, 50000.00, GETDATE()), -- 人資專員
-(2005, 120000.00, 250000.00, GETDATE()), -- 會計主管
-(2006, 38000.00, 30000.00, GETDATE()); -- 初級開發 (最低薪資)   
+(1001, 180000.00, 300000.00, GETDATE()), 
+(1002, 75000.00, 150000.00, GETDATE()),  
+(1003, 85000.00, 180000.00, GETDATE()),  
+(1004, 45000.00, 50000.00, GETDATE()),   
+(1005, 120000.00, 250000.00, GETDATE()), 
+(1006, 38000.00, 30000.00, GETDATE());   
 
 -- 10. 插入消息資料 (AuthorID/UserID: 1001 ~ 1006)
 INSERT INTO News (Title, Content, AuthorID, PostDate) VALUES
