@@ -46,14 +46,10 @@
         }
         else
         {
-            // 普通 User: 僅顯示自己（但我們故意讓列表為空，逼使用者去猜 IDOR 參數）
-            lblUserMessage.Text = "您是 <strong>普通使用者</strong>。列表對您隱藏。";
-            lblUserMessage.CssClass = "alert alert-warning";
-            EmployeeGrid.Visible = false; 
-            // 為了讓 User 知道自己的 ID，可以提示
-            // 查詢自己的 EmployeeID
+            // 普通 User: 顯示自己的資料
+            lblUserMessage.Text = "您是 <strong>普通使用者</strong>，以下為您的員工資料。";
+            lblUserMessage.CssClass = "alert alert-info";
             sql = "SELECT EmployeeID, Name, Title FROM Employees WHERE UserID = " + userID;
-            // 即使查到，也故意不顯示 GridView，強制走 IDOR 攻擊路徑
         }
 
         try
