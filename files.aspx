@@ -199,7 +199,7 @@
                 Response.End();
             }
         }
-        else if (e.CommandName == "Delete")
+        else if (e.CommandName == "DeleteItem")
         {
             string itemPath = e.CommandArgument.ToString();
             string currentPath = ViewState["CurrentPath"] as string;
@@ -375,7 +375,7 @@
                                                 <i class="bi bi-download"></i> 下載
                                             </asp:LinkButton>
                                         </asp:PlaceHolder>
-                                        <asp:LinkButton ID="btnDelete" runat="server" CommandName="Delete" 
+                                        <asp:LinkButton ID="btnDelete" runat="server" CommandName="DeleteItem" 
                                             CommandArgument='<%# Eval("Path") %>' 
                                             CssClass="btn btn-sm btn-danger"
                                             OnClientClick="return confirm('確定要刪除這個項目嗎？');">
