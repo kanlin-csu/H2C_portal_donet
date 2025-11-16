@@ -62,9 +62,31 @@
     
     private void QuerySalary(string employeeId)
     {
+        string role = Session["Role"].ToString();
+        int userId = Convert.ToInt32(Session["UserID"]);
+        
+        // 如果是一般使用者，強制使用自己的 EmployeeID，忽略輸入值
+        if (role == "User")
+        {
+            int myEmployeeId = GetEmployeeIdByUserId(userId);
+            if (myEmployeeId > 0)
+            {
+                employeeId = myEmployeeId.ToString();
+            }
+            else
+            {
+                lblMessage.Text = "找不到您的員工資料。";
+                lblMessage.CssClass = "alert alert-danger";
+                lblMessage.Visible = true;
+                divSalaryInfo.Visible = false;
+                return;
+            }
+        }
+        
         // ❌ 故意使用字串拼接來建構 SQL 查詢 (SQLi 漏洞)
         // 攻擊者可以使用 UNION SELECT 來查詢其他員工的薪資
-        string sql = "SELECT s.MonthlySalary, s.Bonus, s.LastUpdated, e.Name, e.Title " +
+        // 但一般使用者已被強制限制為只能查詢自己的 EmployeeID
+        string sql = "SELECT s.EmployeeID, s.MonthlySalary, s.Bonus, s.LastUpdated, e.Name, e.Title " +
                      "FROM Salaries s " +
                      "INNER JOIN Employees e ON s.EmployeeID = e.EmployeeID " +
                      "WHERE s.EmployeeID = " + employeeId;
@@ -80,6 +102,23 @@
                 {
                     if (reader.Read())
                     {
+                        // 再次驗證：一般使用者查詢到的 EmployeeID 必須是自己的
+                        if (role == "User")
+                        {
+                            int queriedEmployeeId = Convert.ToInt32(reader["EmployeeID"]);
+                            int myEmployeeId = GetEmployeeIdByUserId(userId);
+                            
+                            if (queriedEmployeeId != myEmployeeId)
+                            {
+                                lblMessage.Text = "您只能查詢自己的薪資資訊。";
+                                lblMessage.CssClass = "alert alert-danger";
+                                lblMessage.Visible = true;
+                                divSalaryInfo.Visible = false;
+                                return;
+                            }
+                        }
+                        
+                        lblEmployeeID.Text = reader["EmployeeID"].ToString();
                         lblEmployeeName.Text = reader["Name"].ToString();
                         lblEmployeeTitle.Text = reader["Title"].ToString();
                         lblMonthlySalary.Text = Convert.ToDecimal(reader["MonthlySalary"]).ToString("N0");
@@ -110,34 +149,29 @@
     }
 
     // 🚨 這是 SQL Injection 的漏洞點 🚨
+    // 但一般使用者已被強制限制為只能查詢自己的 EmployeeID
     protected void btnQuery_Click(object sender, EventArgs e)
     {
         string employeeId = txtEmployeeID.Text.Trim();
         string role = Session["Role"].ToString();
         
-        if (string.IsNullOrEmpty(employeeId))
+        // 管理者需要輸入員工編號
+        if (role == "Admin")
         {
-            lblMessage.Text = "請輸入員工編號。";
-            lblMessage.CssClass = "alert alert-warning";
-            lblMessage.Visible = true;
-            divSalaryInfo.Visible = false;
-            return;
-        }
-
-        // 如果不是管理者，檢查編號是否為自己
-        if (role == "User")
-        {
-            int userId = Convert.ToInt32(Session["UserID"]);
-            int myEmployeeId = GetEmployeeIdByUserId(userId);
-            
-            if (myEmployeeId > 0 && employeeId != myEmployeeId.ToString())
+            if (string.IsNullOrEmpty(employeeId))
             {
-                lblMessage.Text = "您只能查詢自己的薪資資訊。";
-                lblMessage.CssClass = "alert alert-danger";
+                lblMessage.Text = "請輸入員工編號。";
+                lblMessage.CssClass = "alert alert-warning";
                 lblMessage.Visible = true;
                 divSalaryInfo.Visible = false;
                 return;
             }
+        }
+        // 一般使用者不需要輸入，會自動使用自己的 EmployeeID
+        else if (role == "User")
+        {
+            // 一般使用者輸入的員工編號會被忽略，強制使用自己的 EmployeeID
+            // 這裡保留輸入框是為了 UI 一致性，但實際查詢時會使用自己的 EmployeeID
         }
 
         QuerySalary(employeeId);
@@ -295,6 +329,10 @@
 
                             <div id="divSalaryInfo" runat="server" visible="false" class="salary-card">
                                 <h5 class="mb-4"><i class="bi bi-person-badge"></i> 員工資訊</h5>
+                                <div class="salary-item">
+                                    <div class="salary-label">員工編號</div>
+                                    <div><asp:Label ID="lblEmployeeID" runat="server" CssClass="fs-5 fw-bold" /></div>
+                                </div>
                                 <div class="salary-item">
                                     <div class="salary-label">姓名</div>
                                     <div><asp:Label ID="lblEmployeeName" runat="server" CssClass="fs-5" /></div>
