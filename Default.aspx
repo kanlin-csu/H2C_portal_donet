@@ -285,7 +285,7 @@
                 <div class="col-lg-7">
                     <div class="card">
                         <div class="card-header">
-                            <h4 class="mb-0"><i class="bi bi-bell"></i> 最新消息 </h4>
+                            <h4 class="mb-0"><i class="bi bi-bell"></i> 最新消息 (Stored XSS 靶場)</h4>
                         </div>
                         <div class="card-body p-4">
                             <asp:Repeater ID="newsRepeater" runat="server">
