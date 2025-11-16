@@ -1,97 +1,100 @@
 -- 1. 建立資料庫 (如果不存在)
-IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = N'School')
+IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = N'H2C_Portal')
 BEGIN
-    CREATE DATABASE [School];
+    CREATE DATABASE [H2C_Portal];
 END
 GO
 
-USE [School];
+USE [H2C_Portal];
 GO
 
 -- 2. 刪除舊表
-IF OBJECT_ID('Students') IS NOT NULL DROP TABLE Students;
+IF OBJECT_ID('Salaries') IS NOT NULL DROP TABLE Salaries;
+IF OBJECT_ID('News') IS NOT NULL DROP TABLE News;
 IF OBJECT_ID('Employees') IS NOT NULL DROP TABLE Employees;
+IF OBJECT_ID('Users') IS NOT NULL DROP TABLE Users;
 GO
 
--- 3. 建立 Employees 表 (教職員工)
+-- 3. 建立 Users 表 (UserID: 1001, 1002, ...)
+CREATE TABLE Users (
+    UserID INT IDENTITY(1001, 1) PRIMARY KEY,
+    Username NVARCHAR(50) UNIQUE NOT NULL,
+    PasswordHash NVARCHAR(128) NOT NULL,
+    Role NVARCHAR(10) NOT NULL 
+);
+GO
+
+-- 4. 建立 Employees 表 (EmployeeID: 2001, 2002, ...)
 CREATE TABLE Employees (
-    EmployeeID INT IDENTITY(1001, 1) PRIMARY KEY, -- 教職員工 ID
+    EmployeeID INT IDENTITY(2001, 1) PRIMARY KEY,
+    UserID INT UNIQUE FOREIGN KEY REFERENCES Users(UserID),
     Name NVARCHAR(50) NOT NULL,
-    Department NVARCHAR(50) NOT NULL, -- 部門 (教務處, 總務處, 資訊中心, 體育組)
-    Title NVARCHAR(50) NOT NULL,      -- 職位 (校長, 主任, 老師, 職員)
-    Email NVARCHAR(100) UNIQUE NOT NULL,
-    HireDate DATE NOT NULL
+    Title NVARCHAR(50) NOT NULL,
+    PhotoPath NVARCHAR(255) NULL
 );
 GO
 
--- 4. 建立 Students 表 (學生)
-CREATE TABLE Students (
-    StudentID INT IDENTITY(2001, 1) PRIMARY KEY, -- 學生 ID
-    Name NVARCHAR(50) NOT NULL,
-    Major NVARCHAR(50) NOT NULL,      -- 主修 (科系)
-    Grade INT NOT NULL,               -- 年級 (1, 2, 3, 4)
-    AdvisorID INT,                    -- 指導教授/導師 ID (邏輯關聯 Employees.EmployeeID)
-    EnrollDate DATE NOT NULL,
-    BirthDate DATE NOT NULL
+-- 5. 建立 News 表 (NewsID: 3001, 3002, ...)
+CREATE TABLE News (
+    NewsID INT IDENTITY(3001, 1) PRIMARY KEY,
+    Title NVARCHAR(100) NOT NULL,
+    Content NVARCHAR(MAX) NOT NULL, 
+    AuthorID INT FOREIGN KEY REFERENCES Users(UserID),
+    PostDate DATETIME DEFAULT GETDATE()
 );
 GO
 
--- 5. 插入 Employees 測試資料 (20 組)
-INSERT INTO Employees (Name, Department, Title, Email, HireDate) VALUES
--- 核心管理層 (1001-1004)
-(N'陳大為', N'校長室', N'校長', N'david.chen@school.edu.tw', '2015-08-01'), 
-(N'李美華', N'教務處', N'教務主任', N'meihua.li@school.edu.tw', '2018-09-01'), 
-(N'王志明', N'總務處', N'總務主任', N'zhiming.wang@school.edu.tw', '2016-03-15'), 
-(N'林雅雯', N'資訊中心', N'資訊長', N'it.chief@school.edu.tw', '2019-01-01'), 
+-- 6. 建立 Salaries 表 (SalaryID: 4001, 4002, ...)
+CREATE TABLE Salaries (
+    SalaryID INT IDENTITY(4001, 1) PRIMARY KEY,
+    EmployeeID INT UNIQUE FOREIGN KEY REFERENCES Employees(EmployeeID),
+    MonthlySalary DECIMAL(10, 2) NOT NULL,
+    Bonus DECIMAL(10, 2) NOT NULL,
+    LastUpdated DATE DEFAULT GETDATE()
+);
+GO
 
--- 教師及行政人員 (1005-1020)
-(N'張偉哲', N'資訊工程系', N'教授', N'weizhe.zhang@cs.school.edu.tw', '2012-09-01'), 
-(N'黃思婷', N'資訊工程系', N'副教授', N'siting.huang@cs.school.edu.tw', '2020-02-10'), 
-(N'劉文傑', N'會計學系', N'副教授', N'wenjie.liu@acc.school.edu.tw', '2017-08-15'), 
-(N'周依琳', N'英語學系', N'助理教授', N'yilin.zhou@eng.school.edu.tw', '2021-09-01'), 
-(N'吳佳穎', N'體育組', N'體育老師', N'jiaying.wu@sport.school.edu.tw', '2022-03-01'), 
-(N'許國強', N'教務處', N'註冊組組長', N'guoqiang.xu@school.edu.tw', '2019-10-20'), 
-(N'鄭麗雯', N'總務處', N'採購專員', N'liwen.zheng@school.edu.tw', '2023-01-05'), 
-(N'謝宗翰', N'資訊中心', N'網路工程師', N'zonghan.xie@school.edu.tw', '2022-07-01'), 
-(N'高小芬', N'學務處', N'生活輔導員', N'xiaofen.gao@school.edu.tw', '2020-09-01'), 
-(N'江品萱', N'資訊工程系', N'助理教授', N'pinxuan.jiang@cs.school.edu.tw', '2024-02-01'), 
-(N'趙士賢', N'會計學系', N'教授', N'shixian.zhao@acc.school.edu.tw', '2014-08-01'), 
-(N'馮俊彥', N'英語學系', N'講師', N'junyan.feng@eng.school.edu.tw', '2023-09-01'), 
-(N'羅佩雯', N'體育組', N'職員', N'peiwen.luo@sport.school.edu.tw', '2024-01-01'), 
-(N'沈文濤', N'教務處', N'課務組職員', N'wentao.shen@school.edu.tw', '2021-05-01'), 
-(N'蔡宜靜', N'總務處', N'出納組職員', N'yijing.cai@school.edu.tw', '2020-04-01'), 
-(N'黃志偉', N'圖書館', N'管理員', N'zhiwei.huang@library.school.edu.tw', '2017-03-01');
+-- 7. 插入使用者資料 (UserID: 1001 ~ 1007)
+INSERT INTO Users (Username, PasswordHash, Role) VALUES
+(N'sysadmin', N'H2C2025', N'Admin'),     -- 1001
+(N'sales.wang', N'H2C2025', N'User'),    -- 1002
+(N'rd.li', N'H2C2025', N'User'),         -- 1003
+(N'hr.chen', N'H2C2025', N'User'),        -- 1004
+(N'finance.lin', N'H2C2025', N'User'),   -- 1005
+(N'dev.zhao', N'H2C2025', N'User'),      -- 1006
+(N'testacc', N'H2C2025', N'User');       -- 1007
 
--- 6. 插入 Students 測試資料 (20 組)
-INSERT INTO Students (Name, Major, Grade, AdvisorID, EnrollDate, BirthDate) VALUES
--- 資訊工程系 (AdvisorID: 1005 張偉哲, 1006 黃思婷)
-(N'林小光', N'資訊工程', 4, 1005, '2021-09-01', '2003-05-15'), -- 2001
-(N'陳雅琳', N'資訊工程', 3, 1005, '2022-09-01', '2004-02-20'),
-(N'王大明', N'資訊工程', 2, 1006, '2023-09-01', '2005-11-01'),
-(N'李佳蓉', N'資訊工程', 1, 1006, '2024-09-01', '2006-12-05'),
-(N'黃思遠', N'資訊工程', 4, 1005, '2021-09-01', '2003-01-01'),
+-- 8. 插入員工資料 (EmployeeIDs: 2001 ~ 2006)
+INSERT INTO Employees (UserID, Name, Title, PhotoPath) VALUES
+(1001, N'林大維', N'系統架構師', N'uploads/2001.jpg'), -- EmployeeID 2001
+(1002, N'王明華', N'業務經理', N'uploads/2002.png'), -- EmployeeID 2002
+(1003, N'李思遠', N'資深工程師', N'uploads/2003.jpg'), -- EmployeeID 2003
+(1004, N'陳芳儀', N'人資專員', N'uploads/2004.png'), -- EmployeeID 2004
+(1005, N'林雅惠', N'會計主管', N'uploads/2005.jpg'), -- EmployeeID 2005 (財務主管)
+(1006, N'趙小開', N'初級開發', N'uploads/2006.jpg'); -- EmployeeID 2006
 
--- 會計學系 (AdvisorID: 1007 劉文傑, 1015 趙士賢)
-(N'趙心怡', N'會計學', 3, 1007, '2022-09-01', '2004-08-10'),
-(N'吳宗憲', N'會計學', 2, 1015, '2023-09-01', '2005-03-22'),
-(N'許美惠', N'會計學', 1, 1007, '2024-09-01', '2006-10-08'),
-(N'林俊傑', N'會計學', 4, 1015, '2021-09-01', '2003-07-19'),
-(N'周杰倫', N'會計學', 3, 1007, '2022-09-01', '2004-04-16'),
+-- 9. 插入薪資資料 (用於 SQLi Union 查詢和 IDOR 敏感目標)
+INSERT INTO Salaries (EmployeeID, MonthlySalary, Bonus, LastUpdated) VALUES
+(2001, 180000.00, 300000.00, GETDATE()), -- 系統架構師 (最高薪資)
+(2002, 75000.00, 150000.00, GETDATE()), -- 業務經理
+(2003, 85000.00, 180000.00, GETDATE()), -- 資深工程師
+(2004, 45000.00, 50000.00, GETDATE()), -- 人資專員
+(2005, 120000.00, 250000.00, GETDATE()), -- 會計主管
+(2006, 38000.00, 30000.00, GETDATE()); -- 初級開發 (最低薪資)   
 
--- 英語學系 (AdvisorID: 1008 周依琳, 1016 馮俊彥)
-(N'方文山', N'英語學', 2, 1008, '2023-09-01', '2005-09-28'),
-(N'江蕙', N'英語學', 1, 1016, '2024-09-01', '2006-01-30'),
-(N'羅志祥', N'英語學', 4, 1008, '2021-09-01', '2003-11-11'),
-(N'楊丞琳', N'英語學', 3, 1016, '2022-09-01', '2004-06-04'),
+-- 10. 插入消息資料 (AuthorID/UserID: 1001 ~ 1006)
+INSERT INTO News (Title, Content, AuthorID, PostDate) VALUES
+(N'【重要】2025年度系統維護通知', N'伺服器將於本週六凌晨進行硬體升級。屆時 Portal 服務將暫停約 4 小時。', 1001, DATEADD(hour, -10, GETDATE())),
+(N'業務部 Q3 績效報告會議', N'所有業務同仁請注意，本季績效總結會議將於 11/20 (三) 下午兩點舉行，請準備好您的資料。', 1002, DATEADD(day, -2, GETDATE())),
+(N'研發部門技術分享：資安基礎', N'本週五下午三點，李思遠工程師將分享 Web 安全開發的基礎知識。歡迎報名參加。', 1003, DATEADD(hour, -3, GETDATE())),
+(N'**部門專用：內部備忘**', N'這個公告只供研發部門內部查閱。請測試人員注意：該欄位未經過濾，請勿輸入惡意腳本。', 1003, DATEADD(hour, -2, GETDATE())),
+(N'財務報銷流程調整', N'自下個月起，所有報銷請透過新版電子表單系統提交。詳情請參閱附件。', 1005, DATEADD(day, -5, GETDATE())),
+(N'新人訓練營報名截止', N'人資部提醒：所有新進同仁的職前訓練課程將於明日截止報名。逾期者請洽詢人資陳專員。', 1004, DATEADD(day, -1, GETDATE())),
+(N'【公告】新版使用者手冊發布', N'新版 H2C Portal 使用者手冊已上線，您可以嘗試使用 LFI 技巧來讀取它。', 1001, DATEADD(hour, -1, GETDATE())),
+(N'開發日誌 #01：程式碼審查', N'今天審查了 IDOR 相關的程式碼，看起來還沒修好。請大家注意保護數據。', 1006, DATEADD(hour, -4, GETDATE()));
 
--- 其他學系及混合年級
-(N'劉德華', N'電機工程', 4, 1005, '2021-09-01', '2003-09-27'),
-(N'蔡依林', N'工業設計', 3, 1007, '2022-09-01', '2004-12-19'),
-(N'張惠妹', N'藝術學', 2, 1015, '2023-09-01', '2005-07-03'),
-(N'伍佰', N'機械工程', 1, 1008, '2024-09-01', '2006-04-14'),
-(N'蘇打綠', N'心理學', 3, 1006, '2022-09-01', '2004-03-03'),
-(N'五月天', N'建築學', 4, 1015, '2021-09-01', '2003-10-25'); -- 2020
-
--- 7. 驗證資料
+-- 11. 驗證資料
+SELECT * FROM Users;
 SELECT * FROM Employees;
-SELECT * FROM Students;
+SELECT * FROM Salaries;
+SELECT * FROM News;
