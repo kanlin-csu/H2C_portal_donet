@@ -1,11 +1,9 @@
 <%@ WebHandler Language="C#" Class="ImageHandler" %>
-<%@ Import Namespace="System.Web" %>
-<%@ Import Namespace="System.IO" %>
 
 <script runat="server">
-    public class ImageHandler : IHttpHandler
+    public class ImageHandler : System.Web.IHttpHandler
     {
-        public void ProcessRequest(HttpContext context)
+        public void ProcessRequest(System.Web.HttpContext context)
         {
             // 設定 UTF-8 編碼
             context.Response.ContentEncoding = System.Text.Encoding.UTF8;
@@ -25,9 +23,9 @@
                 // ❌ 未對路徑進行淨化或限制。允許 ../../ 等路徑遍歷。
                 string fullPath = context.Server.MapPath(relativePath);
 
-                if (File.Exists(fullPath))
+                if (System.IO.File.Exists(fullPath))
                 {
-                    string extension = Path.GetExtension(fullPath).ToLower();
+                    string extension = System.IO.Path.GetExtension(fullPath).ToLower();
                     string contentType = "application/octet-stream"; // 預設
 
                     if (extension == ".jpg" || extension == ".jpeg")
@@ -47,7 +45,7 @@
                     context.Response.Write("檔案不存在: " + fullPath);
                 }
             }
-            catch (Exception ex)
+            catch (System.Exception ex)
             {
                 // 為了 CTF 提示，輸出錯誤信息
                 context.Response.ContentType = "text/plain; charset=UTF-8";
