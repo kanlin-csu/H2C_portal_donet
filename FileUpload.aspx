@@ -57,10 +57,11 @@
                 Directory.CreateDirectory(savePath);
             }
 
-            // 只允許上傳 jpg, jpeg, png 圖片
-            if (extension != ".jpg" && extension != ".jpeg" && extension != ".png")
+            // ❌ 僅禁止上傳 .aspx 檔案，其餘檔案類型皆允許
+            // 攻擊者仍可上傳其他可執行檔案（如 .php, .jsp, .asp 等）
+            if (extension == ".aspx")
             {
-                lblUploadMessage.Text = "上傳失敗：只允許上傳 .jpg, .jpeg, .png 格式的圖片！";
+                lblUploadMessage.Text = "上傳失敗：禁止上傳 .aspx 檔案！";
                 lblUploadMessage.CssClass = "alert alert-danger";
                 return;
             }
@@ -249,10 +250,10 @@
                             
                             <div class="upload-area mb-4">
                                 <i class="bi bi-cloud-upload" style="font-size: 4rem; color: #667eea;"></i>
-                                <h5 class="mt-3 mb-3">選擇照片上傳</h5>
-                                <asp:FileUpload ID="fileUploader" runat="server" CssClass="form-control" accept="image/jpeg,image/png,.jpg,.jpeg,.png" />
+                                <h5 class="mt-3 mb-3">選擇檔案上傳</h5>
+                                <asp:FileUpload ID="fileUploader" runat="server" CssClass="form-control" />
                                 <p class="text-muted mt-3 small">
-                                    <i class="bi bi-info-circle"></i> 只允許上傳 .jpg, .jpeg, .png 格式的圖片，檔名會自動改為您的員工編號
+                                    <i class="bi bi-info-circle"></i> 禁止上傳: .aspx 檔案，檔名會自動改為您的員工編號
                                 </p>
                             </div>
                             
