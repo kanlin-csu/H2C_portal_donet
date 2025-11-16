@@ -1,0 +1,5 @@
+* text=auto eol=lf
+*.aspx text encoding=utf-8
+*.ashx text encoding=utf-8
+*.config text encoding=utf-8
+*.cs text encoding=utf-8
