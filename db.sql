@@ -72,13 +72,13 @@ GO
 
 -- 7. 插入使用者資料 (UserID: 1001 ~ 1007)
 INSERT INTO Users (Username, PasswordHash, Role) VALUES
-(N'sysadmin', N'H2C2025', N'Admin'),     -- 1001
+(N'sysadmin', N'iamsuperman', N'Admin'), -- 1001
 (N'sales.wang', N'H2C2025', N'User'),    -- 1002
 (N'rd.li', N'H2C2025', N'User'),         -- 1003
 (N'hr.chen', N'H2C2025', N'User'),        -- 1004
 (N'finance.lin', N'H2C2025', N'User'),   -- 1005
 (N'dev.zhao', N'H2C2025', N'User'),      -- 1006
-(N'testacc', N'H2C2025', N'User');       -- 1007
+(N'test', N'test', N'User');             -- 1007
 
 -- 8. 插入員工資料 (手動確保 UserID 欄位與 EmployeeID 欄位一致)
 SET IDENTITY_INSERT Employees ON; 
