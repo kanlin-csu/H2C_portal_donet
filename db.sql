@@ -116,3 +116,22 @@ SELECT * FROM Users;
 SELECT * FROM Employees;
 SELECT * FROM Salaries;
 SELECT * FROM News;
+GO
+
+-- 12. 建立應用程式連線用的 SQL 帳號（web.config 連線字串用這組）
+-- 故意給 db_owner（過大權限），對應 School 資料庫那邊也會給同一個帳號 db_owner，
+-- 示範「資料庫帳號權限範圍設太大，波及同一台 SQL Server 上其他不相關的資料庫」這個教學情境。
+IF NOT EXISTS (SELECT 1 FROM sys.sql_logins WHERE name = 'h2c')
+BEGIN
+    CREATE LOGIN [h2c] WITH PASSWORD = 'h2c', CHECK_POLICY = OFF;
+END
+GO
+
+USE [H2C_Portal];
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.database_principals WHERE name = 'h2c')
+BEGIN
+    CREATE USER [h2c] FOR LOGIN [h2c];
+END
+ALTER ROLE db_owner ADD MEMBER [h2c];
+GO

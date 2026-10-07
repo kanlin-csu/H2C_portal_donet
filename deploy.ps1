@@ -74,24 +74,12 @@ function Invoke-SqlStep {
     }
 }
 
+# db.sql 自己負責 CREATE LOGIN + H2C_Portal 的 db_owner 授權，
+# school_db.sql 自己負責把同一個帳號加進 School 的 db_owner——
+# 這樣 db.sql/school_db.sql 單獨用 SSMS 或 sqlcmd 直接跑，也能建出一個完整可用的帳號，
+# 不用依賴這支部署腳本才能建好連線字串要用的 h2c 帳號。這裡只做跑完後的驗證。
 Invoke-SqlStep "匯入 db.sql" { sqlcmd -S $SqlInstance -i "$SitePath\db.sql" }
 Invoke-SqlStep "匯入 school_db.sql" { sqlcmd -S $SqlInstance -i "$SitePath\school_db.sql" }
-
-$createLoginSql = @"
-IF NOT EXISTS (SELECT 1 FROM sys.sql_logins WHERE name = '$DbUser')
-BEGIN
-    CREATE LOGIN [$DbUser] WITH PASSWORD = '$DbPass', CHECK_POLICY = OFF;
-END
-USE [H2C_Portal];
-IF NOT EXISTS (SELECT 1 FROM sys.database_principals WHERE name = '$DbUser')
-    CREATE USER [$DbUser] FOR LOGIN [$DbUser];
-ALTER ROLE db_owner ADD MEMBER [$DbUser];
-USE [School];
-IF NOT EXISTS (SELECT 1 FROM sys.database_principals WHERE name = '$DbUser')
-    CREATE USER [$DbUser] FOR LOGIN [$DbUser];
-ALTER ROLE db_owner ADD MEMBER [$DbUser];
-"@
-Invoke-SqlStep "建立 $DbUser 登入帳號" { $createLoginSql | sqlcmd -S $SqlInstance }
 
 Write-Host "確認 $DbUser 帳號真的建好了..." -ForegroundColor Cyan
 $verify = sqlcmd -S $SqlInstance -h -1 -Q "SET NOCOUNT ON; SELECT COUNT(*) FROM sys.sql_logins WHERE name = '$DbUser'"

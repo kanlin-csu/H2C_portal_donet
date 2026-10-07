@@ -85,3 +85,16 @@ INSERT INTO dbo.Students (StudentID, Name, Major, Grade, AdvisorID, EnrollDate, 
 (2019, N'蘇柏誠', N'心理學',   3, 1006, '2022-09-01', '2004-03-03'),
 (2020, N'吳宗翰', N'建築學',   4, 1015, '2021-09-01', '2003-10-25');
 GO
+
+-- 把應用程式帳號 h2c 也加進這個無關資料庫，給 db_owner（過大權限）。
+-- 這個帳號本身由 db.sql 負責建立（CREATE LOGIN），這裡只負責加到 School 這個資料庫，
+-- 所以務必先跑過 db.sql 再跑這支，順序不能反。
+-- 這就是整個 LAB 的核心教學情境：h2c 本來只該管 H2C_Portal，卻意外也能讀寫完全無關的校務系統。
+USE [School];
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.database_principals WHERE name = 'h2c')
+BEGIN
+    CREATE USER [h2c] FOR LOGIN [h2c];
+END
+ALTER ROLE db_owner ADD MEMBER [h2c];
+GO
