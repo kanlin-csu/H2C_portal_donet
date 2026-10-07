@@ -234,6 +234,11 @@
                                 <i class="bi bi-cash-coin"></i> 薪資查詢
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="Challenges.aspx">
+                                <i class="bi bi-flag"></i> 挑戰中心
+                            </a>
+                        </li>
                         <% if (Session["Role"].ToString() == "Admin") { %>
                         <li class="nav-item">
                             <a class="nav-link" href="UserManagement.aspx">

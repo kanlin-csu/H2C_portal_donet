@@ -1,0 +1,3 @@
+H2C{lfi_internal_file}
+
+此檔案僅供 H2C Portal 授權靶場的 LFI 練習使用。

@@ -13,6 +13,7 @@ IF OBJECT_ID('Salaries') IS NOT NULL DROP TABLE Salaries;
 IF OBJECT_ID('News') IS NOT NULL DROP TABLE News;
 IF OBJECT_ID('Employees') IS NOT NULL DROP TABLE Employees;
 IF OBJECT_ID('Users') IS NOT NULL DROP TABLE Users;
+IF OBJECT_ID('Flags') IS NOT NULL DROP TABLE Flags;
 GO
 
 -- 3. 建立 Users 表 (UserID: 1001, 1002, ...)
@@ -52,6 +53,21 @@ CREATE TABLE Salaries (
     Bonus DECIMAL(10, 2) NOT NULL,
     LastUpdated DATE DEFAULT GETDATE()
 );
+GO
+
+-- 6b. 建立 Flags 表 (Challenges.aspx 用，不放在任何可被 LFI/ImageHandler.ashx 讀到的檔案裡)
+CREATE TABLE Flags (
+    ChallengeID NVARCHAR(20) PRIMARY KEY,
+    FlagValue NVARCHAR(100) NOT NULL
+);
+GO
+
+INSERT INTO Flags (ChallengeID, FlagValue) VALUES
+(N'idor', N'H2C{idor_employee_detail}'),
+(N'sqli', N'H2C{sqli_salary_union}'),
+(N'xss', N'H2C{stored_xss_news}'),
+(N'upload', N'H2C{upload_extension_bypass}'),
+(N'lfi', N'H2C{lfi_internal_file}');
 GO
 
 -- 7. 插入使用者資料 (UserID: 1001 ~ 1007)

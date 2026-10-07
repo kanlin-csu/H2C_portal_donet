@@ -5,6 +5,15 @@
 <script runat="server">
     protected void Page_Load(object sender, EventArgs e)
     {
+        // ⚠️ 原本這裡完全沒有任何登入/權限檢查，任何人不用登入就能瀏覽整台主機的檔案系統
+        // （含絕對路徑，如 ?path=C:\），嚴重程度遠高於 ImageHandler.ashx 的 LFI。
+        // 這支功能等同完整檔案總管，限制為僅 Admin 可用。
+        if (Session["Role"] == null || Session["Role"].ToString() != "Admin")
+        {
+            Response.Redirect("Default.aspx");
+            return;
+        }
+
         if (!IsPostBack)
         {
             string path = Request.QueryString["path"];

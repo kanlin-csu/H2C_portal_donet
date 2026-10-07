@@ -273,6 +273,11 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link" href="Challenges.aspx">
+                                <i class="bi bi-flag"></i> 挑戰中心
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link active" href="UserManagement.aspx">
                                 <i class="bi bi-person-gear"></i> 帳號管理
                             </a>
@@ -382,4 +387,3 @@
     </form>
 </body>
 </html>
-

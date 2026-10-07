@@ -1,0 +1,9 @@
+.vs/
+bin/
+obj/
+.compile-check/
+uploads/*
+!uploads/.gitkeep
+*.user
+*.suo
+

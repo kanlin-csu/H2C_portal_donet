@@ -3,6 +3,7 @@
 <%@ Import Namespace="System.Data.SqlClient" %>
 <%@ Import Namespace="System.Configuration" %>
 <%@ Import Namespace="System.Web.UI.WebControls" %>
+<%@ Import Namespace="System.Text.RegularExpressions" %>
 
 <script runat="server">
     // DBHelper 靜態類別
@@ -16,6 +17,12 @@
             }
         }
     }
+
+    // 要求真正的標籤或事件屬性語法（例如 <script>、<img onerror=...>、<svg onload=...>、
+    // javascript: 偽協定），而不是單純字串裡出現 "onload" 這幾個字就算數。
+    private static readonly Regex XssPayloadPattern = new Regex(
+        @"<\s*script[^>]*>|on\w+\s*=\s*[""']|javascript\s*:",
+        RegexOptions.IgnoreCase);
 
     protected void Page_Load(object sender, EventArgs e)
     {
@@ -50,7 +57,15 @@
                 conn.Open();
                 cmd.ExecuteNonQuery();
 
-                lblPostMessage.Text = "消息發布成功！(請至主頁查看 XSS 效果)";
+                // ⚠️ 原本只看輸入裡有沒有出現 "<script"/"onerror"/"onload" 這幾個「字串」，
+                // 連一句純文字「請勿使用 onload 事件」都會被誤判成功，沒有真的驗證利用是否成立。
+                // 這裡改成要求「真正的標籤/事件屬性語法」，而且因為 Default.aspx 是用
+                // <%# Eval("Content") %>（未做 HtmlEncode）直接輸出，只要存進去的內容符合
+                // 這個語法，就必然會在首頁以未編碼的形式原樣渲染、真正觸發執行。
+                bool containsXssPayload = XssPayloadPattern.IsMatch(content);
+                lblPostMessage.Text = containsXssPayload
+                    ? "消息發布成功！Flag: H2C{stored_xss_news}"
+                    : "消息發布成功！(請至主頁查看 XSS 效果)";
                 lblPostMessage.CssClass = "alert alert-success";
                 txtTitle.Text = string.Empty;
                 txtContent.Text = string.Empty;
@@ -224,6 +239,11 @@
                         <li class="nav-item">
                             <a class="nav-link" href="SalaryQuery.aspx">
                                 <i class="bi bi-cash-coin"></i> 薪資查詢
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="Challenges.aspx">
+                                <i class="bi bi-flag"></i> 挑戰中心
                             </a>
                         </li>
                         <% if (Session["Role"] != null && Session["Role"].ToString() == "Admin") { %>

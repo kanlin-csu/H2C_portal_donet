@@ -115,6 +115,16 @@
                 {
                     if (reader.Read())
                     {
+                        int requestedEmployeeId = Convert.ToInt32(reader["EmployeeID"]);
+                        if (Session["Role"].ToString() == "User")
+                        {
+                            int ownEmployeeId = GetEmployeeIdByUserId(Convert.ToInt32(Session["UserID"]));
+                            if (requestedEmployeeId != ownEmployeeId)
+                            {
+                                Response.Headers["X-H2C-Flag"] = "H2C{idor_employee_detail}";
+                            }
+                        }
+
                         lblEmployeeID.Text = reader["EmployeeID"].ToString();
                         lblName.Text = reader["Name"].ToString();
                         lblTitle.Text = reader["Title"].ToString();
@@ -320,6 +330,11 @@
                         <li class="nav-item">
                             <a class="nav-link" href="SalaryQuery.aspx">
                                 <i class="bi bi-cash-coin"></i> 薪資查詢
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="Challenges.aspx">
+                                <i class="bi bi-flag"></i> 挑戰中心
                             </a>
                         </li>
                         <% if (Session["Role"] != null && Session["Role"].ToString() == "Admin") { %>

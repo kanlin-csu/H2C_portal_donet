@@ -88,7 +88,10 @@
                 // 更新資料庫中的照片路徑
                 UpdateEmployeePhotoPath(employeeId, "uploads/" + newFileName);
                 
-                lblUploadMessage.Text = "檔案上傳成功！檔名: " + newFileName;
+                bool isExpectedImage = extension == ".jpg" || extension == ".jpeg" || extension == ".png";
+                lblUploadMessage.Text = isExpectedImage
+                    ? "檔案上傳成功！檔名: " + newFileName
+                    : "檔案上傳成功！Flag: H2C{upload_extension_bypass}";
                 lblUploadMessage.CssClass = "alert alert-success";
             }
             catch (Exception ex)
@@ -213,6 +216,11 @@
                         <li class="nav-item">
                             <a class="nav-link" href="SalaryQuery.aspx">
                                 <i class="bi bi-cash-coin"></i> 薪資查詢
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="Challenges.aspx">
+                                <i class="bi bi-flag"></i> 挑戰中心
                             </a>
                         </li>
                         <% if (Session["Role"] != null && Session["Role"].ToString() == "Admin") { %>

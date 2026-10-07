@@ -2,6 +2,7 @@
 <%@ Import Namespace="System" %>
 <%@ Import Namespace="System.Data.SqlClient" %>
 <%@ Import Namespace="System.Configuration" %>
+<%@ Import Namespace="System.Text.RegularExpressions" %>
 
 <script runat="server">
     // DBHelper 靜態類別
@@ -102,6 +103,16 @@
                 {
                     if (reader.Read())
                     {
+                        // ⚠️ 原本只看送出的 employeeId 字串裡有沒有出現 "union" 這個字，
+                        // 不管查詢語法對不對、有沒有真的多撈到資料都會給 flag。
+                        // 改成檢查「輸入不是單純數字，但查詢依然成功執行並回傳資料列」——
+                        // 一個正常的員工編號查詢不需要靠任何非數字語法就能成功，
+                        // 如果用了非數字輸入還能跑成功，代表真的有語法被資料庫解讀/注入成功。
+                        if (!Regex.IsMatch(employeeId, @"^\d+$"))
+                        {
+                            Response.Headers["X-H2C-Flag"] = "H2C{sqli_salary_union}";
+                        }
+
                         // 再次驗證：一般使用者查詢到的 EmployeeID 必須是自己的
                         if (role == "User")
                         {
@@ -285,6 +296,11 @@
                                 <i class="bi bi-cash-coin"></i> 薪資查詢
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="Challenges.aspx">
+                                <i class="bi bi-flag"></i> 挑戰中心
+                            </a>
+                        </li>
                         <% if (Session["Role"] != null && Session["Role"].ToString() == "Admin") { %>
                         <li class="nav-item">
                             <a class="nav-link" href="UserManagement.aspx">
@@ -376,4 +392,3 @@
     </form>
 </body>
 </html>
-
