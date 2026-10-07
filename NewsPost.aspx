@@ -1,4 +1,8 @@
-<%@ Page Language="C#" AutoEventWireup="true" ResponseEncoding="UTF-8" %>
+<%-- ValidateRequest="false"：ASP.NET 預設的 Request Validation 會在程式碼執行前，
+     直接擋掉任何看起來像 HTML 標籤的 POST 內容（包含這一題故意要讓學生送出的 XSS
+     payload），不關掉的話連 Page_Load/btnPost_Click 都進不去，XSS 這題等於打不穿。
+     只關這一頁，不要動 web.config 影響全站。 --%>
+<%@ Page Language="C#" AutoEventWireup="true" ResponseEncoding="UTF-8" ValidateRequest="false" %>
 <%@ Import Namespace="System" %>
 <%@ Import Namespace="System.Data.SqlClient" %>
 <%@ Import Namespace="System.Configuration" %>
