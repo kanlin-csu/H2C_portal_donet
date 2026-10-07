@@ -88,17 +88,19 @@ INSERT INTO Employees (EmployeeID, UserID, Name, Title, PhotoPath) VALUES
 (1003, 1003, N'李思遠', N'資深工程師', N'uploads/siyuan_li.jpg'),
 (1004, 1004, N'陳芳儀', N'人資專員', N'uploads/fangyi_chen.png'),
 (1005, 1005, N'林雅惠', N'會計主管', N'uploads/yahui_lin.jpg'),
-(1006, 1006, N'趙小開', N'初級開發', N'uploads/xiaokai_zhao.jpg');
+(1006, 1006, N'趙小開', N'初級開發', N'uploads/xiaokai_zhao.jpg'),
+(1007, 1007, N'測試帳號', N'測試人員', N'uploads/test_account.jpg');
 SET IDENTITY_INSERT Employees OFF;
 
--- 9. 插入薪資資料 (EmployeeID: 1001 ~ 1006)
+-- 9. 插入薪資資料 (EmployeeID: 1001 ~ 1007)
 INSERT INTO Salaries (EmployeeID, MonthlySalary, Bonus, LastUpdated) VALUES
-(1001, 180000.00, 300000.00, GETDATE()), 
-(1002, 75000.00, 150000.00, GETDATE()),  
-(1003, 85000.00, 180000.00, GETDATE()),  
-(1004, 45000.00, 50000.00, GETDATE()),   
-(1005, 120000.00, 250000.00, GETDATE()), 
-(1006, 38000.00, 30000.00, GETDATE());   
+(1001, 180000.00, 300000.00, GETDATE()),
+(1002, 75000.00, 150000.00, GETDATE()),
+(1003, 85000.00, 180000.00, GETDATE()),
+(1004, 45000.00, 50000.00, GETDATE()),
+(1005, 120000.00, 250000.00, GETDATE()),
+(1006, 38000.00, 30000.00, GETDATE()),
+(1007, 32000.00, 5000.00, GETDATE());
 
 -- 10. 插入消息資料 (AuthorID/UserID: 1001 ~ 1006)
 INSERT INTO News (Title, Content, AuthorID, PostDate) VALUES
