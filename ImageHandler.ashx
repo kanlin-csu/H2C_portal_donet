@@ -21,6 +21,17 @@ public class ImageHandler : IHttpHandler
             return;
         }
 
+        // 只允許存取 uploads/ 跟 image/ 底下的檔案——
+        // 但這是字串前綴檢查，不是真正的路徑正規化比對，
+        // relativePath 用 "uploads/../web.config" 這種字串一樣能通過這關，
+        // 之後 Server.MapPath 還是會把 ".." 解析掉，真正讀到的是 uploads/ 外面的檔案。
+        if (!relativePath.StartsWith("uploads/") && !relativePath.StartsWith("image/"))
+        {
+            context.Response.ContentType = "text/plain; charset=UTF-8";
+            context.Response.Write("禁止存取此路徑。");
+            return;
+        }
+
         try
         {
             // ❌ 未對路徑進行淨化或限制。允許 ../../ 等路徑遍歷。

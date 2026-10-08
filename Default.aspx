@@ -200,6 +200,9 @@
         <!-- 導航選單 -->
         <nav class="navbar navbar-expand-lg navbar-light">
             <div class="container">
+                <a href="ImageHandler.ashx?path=image/logo-badge.png" target="_blank" title="查看完整公司識別標誌">
+                    <img src="ImageHandler.ashx?path=image/logo-badge.png" alt="H2C Logo" height="32" class="d-inline-block align-text-top me-2" />
+                </a>
                 <a class="navbar-brand fw-bold" href="Default.aspx">
                     <i class="bi bi-shield-check"></i> H2C 練習平台
                 </a>
