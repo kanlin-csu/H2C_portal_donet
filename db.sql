@@ -1,4 +1,4 @@
--- 1. 建立資料庫 (如果不存在)
+﻿-- 1. 建立資料庫 (如果不存在)
 IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = N'H2C_Portal')
 BEGIN
     CREATE DATABASE [H2C_Portal];
