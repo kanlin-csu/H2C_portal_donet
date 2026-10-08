@@ -270,9 +270,6 @@
                                     CssClass="btn btn-primary btn-lg" />
                             </div>
                             
-                            <div class="alert alert-info mt-4">
-                                <i class="bi bi-folder"></i> <strong>上傳目錄:</strong> ~/uploads/ (請先手動創建此資料夾)
-                            </div>
                         </div>
                     </div>
                 </div>

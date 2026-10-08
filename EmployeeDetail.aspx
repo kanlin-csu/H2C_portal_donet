@@ -132,10 +132,8 @@
                         lblName.Text = reader["Name"].ToString();
                         lblTitle.Text = reader["Title"].ToString();
                         
-                        // 設置照片路徑供 LFI 靶場使用
                         string photoPath = reader["PhotoPath"].ToString();
-                        lblPhotoPath.Text = photoPath;
-                        
+
                         // 將照片路徑傳遞給 ImageHandler，作為 LFI 練習點
                         imgEmployee.Attributes["src"] = "ImageHandler.ashx?path=" + photoPath;
                         
@@ -408,10 +406,6 @@
                                     <div class="info-item">
                                         <div class="info-label"><i class="bi bi-briefcase"></i> 職位</div>
                                         <div><asp:Label ID="lblTitle" runat="server" CssClass="fs-5" /></div>
-                                    </div>
-                                    <div class="info-item">
-                                        <div class="info-label"><i class="bi bi-folder"></i> 照片路徑</div>
-                                        <div><asp:Label ID="lblPhotoPath" runat="server" CssClass="text-muted small" /></div>
                                     </div>
                                 </div>
                             </div>
