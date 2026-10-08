@@ -83,7 +83,7 @@ INSERT INTO Users (Username, PasswordHash, Role) VALUES
 -- 8. 插入員工資料 (手動確保 UserID 欄位與 EmployeeID 欄位一致)
 SET IDENTITY_INSERT Employees ON; 
 INSERT INTO Employees (EmployeeID, UserID, Name, Title, PhotoPath) VALUES
-(1001, 1001, N'林大維', N'系統架構師', N'uploads/david_lin.jpg'),
+(1001, 1001, N'甘霖老師', N'系統架構師', N'uploads/david_lin.jpg'),
 (1002, 1002, N'王明華', N'業務經理', N'uploads/minghua_wang.png'),
 (1003, 1003, N'李思遠', N'資深工程師', N'uploads/siyuan_li.jpg'),
 (1004, 1004, N'陳芳儀', N'人資專員', N'uploads/fangyi_chen.png'),
