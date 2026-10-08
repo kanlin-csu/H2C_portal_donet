@@ -251,7 +251,7 @@
                 <div class="col-lg-8">
                     <div class="card">
                         <div class="card-header">
-                            <h4 class="mb-0"><i class="bi bi-cloud-upload"></i> 員工照片上傳 (任意檔案上傳靶場)</h4>
+                            <h4 class="mb-0"><i class="bi bi-cloud-upload"></i> 員工照片上傳</h4>
                         </div>
                         <div class="card-body p-4">
                             <asp:Label ID="lblUploadMessage" runat="server" CssClass="alert d-block mb-3" Visible="false"></asp:Label>

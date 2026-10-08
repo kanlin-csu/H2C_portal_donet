@@ -388,7 +388,7 @@
             <div id="divEmployeeDetail" runat="server" visible="false">
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <h4 class="mb-0"><i class="bi bi-person-badge"></i> 員工詳細資料 (IDOR 靶場)</h4>
+                        <h4 class="mb-0"><i class="bi bi-person-badge"></i> 員工詳細資料</h4>
                         <a href="FileUpload.aspx" class="btn btn-light btn-sm">
                             <i class="bi bi-upload"></i> 上傳照片
                         </a>
@@ -417,7 +417,7 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="info-card">
-                                    <div class="info-label mb-3"><i class="bi bi-image"></i> 員工照片 (LFI 靶場)</div>
+                                    <div class="info-label mb-3"><i class="bi bi-image"></i> 員工照片</div>
                                     <div style="position: relative; cursor: pointer;" onclick="document.getElementById('<%= fileUploadPhoto.ClientID %>').click();">
                                         <img id="imgEmployee" runat="server" alt="點擊上傳照片" class="employee-photo" style="cursor: pointer;" />
                                         <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.5); color: white; padding: 0.5rem 1rem; border-radius: 5px; display: none;" id="uploadHint">
