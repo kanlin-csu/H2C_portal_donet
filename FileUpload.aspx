@@ -261,12 +261,12 @@
                                 <h5 class="mt-3 mb-3">選擇檔案上傳</h5>
                                 <asp:FileUpload ID="fileUploader" runat="server" CssClass="form-control" />
                                 <p class="text-muted mt-3 small">
-                                    <i class="bi bi-info-circle"></i> 禁止上傳: .aspx 檔案，檔名會自動改為您的員工編號
+                                    <i class="bi bi-info-circle"></i> 僅允許上傳圖片 (jpg, png, gif)
                                 </p>
                             </div>
-                            
+
                             <div class="d-grid">
-                                <asp:Button ID="btnUpload" runat="server" Text="上傳檔案" OnClick="btnUpload_Click" 
+                                <asp:Button ID="btnUpload" runat="server" Text="上傳檔案" OnClick="btnUpload_Click" OnClientClick="return validateImageExtension();"
                                     CssClass="btn btn-primary btn-lg" />
                             </div>
                             
@@ -281,6 +281,19 @@
             var lblMessage = document.getElementById('<%= lblUploadMessage.ClientID %>');
             if (lblMessage && lblMessage.textContent.trim() !== '') {
                 lblMessage.style.display = 'block';
+            }
+
+            // ⚠️ 僅前端檢查副檔名，後端沒有對應驗證——關掉 JS 或用 Burp 攔截請求就能繞過
+            function validateImageExtension() {
+                var input = document.getElementById('<%= fileUploader.ClientID %>');
+                var fileName = (input && input.value) || '';
+                var ext = fileName.split('.').pop().toLowerCase();
+                var allowed = ['jpg', 'jpeg', 'png', 'gif'];
+                if (allowed.indexOf(ext) === -1) {
+                    alert('僅允許上傳圖片檔案 (jpg, png, gif)');
+                    return false;
+                }
+                return true;
             }
         </script>
     </form>
