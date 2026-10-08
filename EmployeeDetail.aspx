@@ -41,6 +41,9 @@
                     LoadEmployeeDetail(myEmployeeId.ToString());
                     // 設定查詢輸入框的值（前端 disabled，但可以修改）
                     txtQueryEmployeeID.Value = myEmployeeId.ToString();
+                    // 一般使用者也要能看到這個查詢表單，IDOR 這題才摸得到入口
+                    // （LoadEmployeeDetail 內部會把它設回 false，這裡要在那之後覆蓋回來）
+                    divQueryForm.Visible = true;
                 }
                 else
                 {
